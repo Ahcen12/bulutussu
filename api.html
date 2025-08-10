@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>API Verileri</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        input, button {
+            padding: 8px;
+            margin-right: 5px;
+        }
+        table {
+            border-collapse: collapse;
+            margin-top: 20px;
+            width: 100%;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h2>Verileri Getir</h2>
+    <input type="text" id="filter" placeholder="Filtre (örn: ankara)">
+    <button onclick="getData()">Verileri Getir</button>
+    <table id="dataTable" style="display:none;">
+        <thead>
+            <tr id="tableHeader"></tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+    <script>
+        async function getData() {
+            const filterValue = document.getElementById("filter").value;
+            const apiKey = "mysecret123";
+            const apiUrl = `https://csv-api.ahcen01224.workers.dev/?key=${apiKey}&filter=${encodeURIComponent(filterValue)}`;
+            try {
+                const res = await fetch(apiUrl);
+                if (!res.ok) {
+                    alert("API isteği başarısız veya anahtar hatalı!");
+                    return;
+                }
+                const json = await res.json();
+                if (!json.data || json.data.length === 0) {
+                    alert("Veri bulunamadı!");
+                    return;
+                }
+                document.getElementById("dataTable").style.display = "table";
+                const headers = Object.keys(json.data[0]);
+                const headerRow = document.getElementById("tableHeader");
+                headerRow.innerHTML = "";
+                headers.forEach(h => {
+                    const th = document.createElement("th");
+                    th.textContent = h;
+                    headerRow.appendChild(th);
+                });
+                const body = document.getElementById("tableBody");
+                body.innerHTML = "";
+                json.data.forEach(row => {
+                    const tr = document.createElement("tr");
+                    headers.forEach(h => {
+                        const td = document.createElement("td");
+                        td.textContent = row[h];
+                        tr.appendChild(td);
+                    });
+                    body.appendChild(tr);
+                });
+            } catch (err) {
+                console.error("Hata:", err);
+                alert("Veriler alınırken bir hata oluştu.");
+            }
+        }
+    </script>
+</body>
+</html>
